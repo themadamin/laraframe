@@ -1,0 +1,16 @@
+{
+    "name": "madamin/laraframe",
+    "authors": [
+        {
+            "name": "themadamin",
+            "email": "madaminme@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Core\\": "Core/",
+            "Http\\": "Http/"
+        }
+    }
+}
