@@ -2,53 +2,22 @@
 
 namespace Core;
 
-use Core\Middleware\Middleware;
 use Exception;
+use ReflectionMethod;
 
 class Router
 {
     protected array $routes = [];
 
-    public function add($method, $uri, $controller)
+    public function add($method, $uri, $controller): static
     {
-        $this->routes[] = [
-            'uri' => $uri,
-            'controller' => $controller,
-            'method' => $method,
-            'middleware' => null
-        ];
+        $controller = is_string($controller) ? [$controller, '__invoke'] : $controller;
 
-        return $this;
-    }
-
-    public function get($uri, $controller): static
-    {
-        return $this->add('GET', $uri, $controller);
-    }
-
-    public function post($uri, $controller): static
-    {
-        return $this->add('POST', $uri, $controller);
-    }
-
-    public function delete($uri, $controller): static
-    {
-        return $this->add('DELETE', $uri, $controller);
-    }
-
-    public function patch($uri, $controller): static
-    {
-        return $this->add('PATCH', $uri, $controller);
-    }
-
-    public function put($uri, $controller): static
-    {
-        return $this->add('PUT', $uri, $controller);
-    }
-
-    public function only($key): static
-    {
-        $this->routes[array_key_last($this->routes)]['middleware'] = $key;
+        if (str_contains($uri, '{')) {
+            $this->routes[$method]['dynamic'][] = compact('uri', 'controller');
+        } else {
+            $this->routes[$method]['static'][$uri] = $controller;
+        }
 
         return $this;
     }
@@ -58,27 +27,76 @@ class Router
      */
     public function route($uri, $method)
     {
-        foreach ($this->routes as $route) {
-            if ($route['uri'] === $uri && $route['method'] === strtoupper($method)) {
-                if ($route['middleware'] ?? false) {
-                    Middleware::resolve($route['middleware']);
-                }
-                return require base_path('Http/controllers/'.$route['controller']);
+        // Check static routes first
+        if (isset($this->routes[$method]['static'][$uri])) {
+            $this->callAction($this->routes[$method]['static'][$uri]);
+            return;
+        }
+
+        // Check dynamic routes
+        foreach ($this->routes[$method]['dynamic'] as $route) {
+            $pattern = $route['uri'];
+            preg_match_all('/\{(\w+)\}/', $pattern, $paramNames);
+            $paramNames = $paramNames[1];
+
+            $regex = "#^" . preg_replace('/\{(\w+)\}/', '([^/]+)', $pattern) . "$#";
+
+            if (preg_match($regex, $uri, $matches)) {
+                array_shift($matches);
+                $params = array_combine($paramNames, $matches);
+                $this->callAction($route['controller'], $params);
+                return;
             }
         }
 
-        $this->abort();
+        // No route found
+        abort('No matching route found');
     }
 
-    protected function abort($code = 404)
+    /**
+     * @throws \ReflectionException
+     */
+    protected function callAction($action, $params = []) {
+        $class = $action[0];
+        $method = $action[1];
+
+        $reflection = new ReflectionMethod($class, $method);
+        $args = [];
+
+        foreach($reflection->getParameters() as $parameter){
+            $name = $parameter->getName();
+            if (isset($params[$name])) {
+                $args[] = $params[$name];
+            }
+        }
+
+        $reflection->invokeArgs(new $class, $args);
+    }
+
+    public function get(string $uri, array|string $controller): static
     {
-        http_response_code($code);
-
-        require base_path("views/{$code}.php");
-
-        die();
+        return $this->add('GET', $uri, $controller);
     }
 
+    public function post(string $uri, array|string $controller): static
+    {
+        return $this->add('POST', $uri, $controller);
+    }
+
+    public function delete(string $uri, array|string $controller): static
+    {
+        return $this->add('DELETE', $uri, $controller);
+    }
+
+    public function patch(string $uri, array|string $controller): static
+    {
+        return $this->add('PATCH', $uri, $controller);
+    }
+
+    public function put(string $uri, array|string $controller): static
+    {
+        return $this->add('PUT', $uri, $controller);
+    }
 
     function previousUrl()
     {

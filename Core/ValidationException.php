@@ -4,7 +4,7 @@ namespace Core;
 
 use Exception;
 
-class ValidationException extends Exception
+class   ValidationException extends Exception
 {
     public readonly array $errors;
     public readonly array $old;

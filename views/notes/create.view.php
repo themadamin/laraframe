@@ -11,6 +11,27 @@
                         <div class="space-y-6 bg-white px-4 py-5 sm:p-6">
                             <div>
                                 <label
+                                        for="title"
+                                        class="block text-sm font-medium text-gray-700"
+                                >Title</label>
+
+                                <div class="mt-1">
+                                    <input
+                                            id="title"
+                                            name="title"
+                                            rows="3"
+                                            value="<?= $_POST['title'] ?? '' ?>"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            placeholder="Here's an title for a note..."
+                                    />
+
+                                    <?php if (isset($errors['title'])) : ?>
+                                        <p class="text-red-500 text-xs mt-2"><?= $errors['title'] ?></p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div>
+                                <label
                                     for="body"
                                     class="block text-sm font-medium text-gray-700"
                                 >Body</label>
@@ -20,9 +41,10 @@
                                         id="body"
                                         name="body"
                                         rows="3"
+                                        value="<?= $_POST['body'] ?? '' ?>"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                         placeholder="Here's an idea for a note..."
-                                    ><?= $_POST['body'] ?? '' ?></input>
+                                    />
 
                                     <?php if (isset($errors['body'])) : ?>
                                         <p class="text-red-500 text-xs mt-2"><?= $errors['body'] ?></p>

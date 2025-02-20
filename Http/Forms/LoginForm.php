@@ -20,31 +20,47 @@ class  LoginForm
     }
 
     /**
+     * @param $attributes
+     * @return LoginForm|null
      * @throws ValidationException
      */
-    public static function validate($attributes)
+    public static function validate($attributes): ?LoginForm
     {
         $instance = new static($attributes);
 
         return $instance->failed() ? $instance->throw() : $instance;
     }
 
-    public function throw()
+    /**
+     * @return void
+     * @throws ValidationException
+     */
+    public function throw(): void
     {
         ValidationException::throw($this->errors(), $this->attributes);
     }
 
+    /**
+     * @return bool
+     */
     public function failed(): bool
     {
         return count($this->errors);
     }
 
-
+    /**
+     * @return array
+     */
     public function errors(): array
     {
         return $this->errors;
     }
 
+    /**
+     * @param $field
+     * @param $message
+     * @return $this
+     */
     public function error($field, $message): static
     {
         $this->errors[$field] = $message;

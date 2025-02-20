@@ -1,22 +1,30 @@
 <?php
 
-$router->get('/', 'index.php');
-$router->get('/about', 'about.php');
-$router->get('/contact', 'contact.php');
+use Http\Controllers\AboutController;
+use Http\Controllers\ContactController;
+use Http\controllers\HomeController;
+use Http\Controllers\LoginController;
+use Http\Controllers\LogoutController;
+use Http\Controllers\NotesController;
+use Http\Controllers\RegistrationController;
+use Http\Controllers\TestController;
 
-$router->get('/notes', 'notes/index.php')->only('auth');
-$router->get('/note', 'notes/show.php');
-$router->delete('/note', 'notes/destroy.php');
+$router->get('/', [HomeController::class, 'index']);
+$router->get('/about', [AboutController::class, 'index']);
+$router->get('/contact', [ContactController::class, 'index']);
 
-$router->get('/note/edit', 'notes/edit.php');
-$router->patch('/note', 'notes/update.php');
+//Auth routes
+$router->get('/login', [LoginController::class, 'create']);
+$router->post('/login', [LoginController::class, 'store']);
+$router->get('/logout', LogoutController::class);
+$router->get('/register', [RegistrationController::class, 'create']);
+$router->post('/register', [RegistrationController::class, 'store']);
 
-$router->get('/notes/create', 'notes/create.php');
-$router->post('/notes', 'notes/store.php');
-
-$router->get('/registration', 'registration/create.php')->only('guest');
-$router->post('/registration', 'registration/store.php')->only('guest');
-
-$router->get('/login', 'session/create.php')->only('guest');
-$router->post('/login', 'session/store.php')->only('guest');
-$router->delete('/logout', 'session/destroy.php')->only('auth');
+//Note routes
+$router->get('/notes', [NotesController::class, 'index']);
+$router->get('/notes/{id}', [NotesController::class, 'show']);
+$router->get('/notes/create', [NotesController::class, 'create']);
+$router->post('/notes', [NotesController::class, 'store']);
+$router->get('/notes/{id}/edit', [NotesController::class, 'edit']);
+$router->put('/notes/{id}', [NotesController::class, 'update']);
+$router->delete('/notes/{id}', [NotesController::class, 'delete']);
