@@ -8,15 +8,13 @@ use Core\Validator;
 
 class NotesController extends Controller
 {
-    private $db;
-    public function __construct()
+    public function __construct(protected Database $database)
     {
-        $this->db = App::resolve(Database::class);
     }
 
     public function index()
     {
-        $notes = $this->db->query('select * from notes where user_id = 1')->get();
+        $notes = $this->database->query('select * from notes where user_id = 1')->get();
         view('notes/index', ['heading' => 'Note', 'notes' => $notes]);
     }
 
@@ -24,7 +22,7 @@ class NotesController extends Controller
     {
         $currentUserId = 1;
 
-        $note = $this->db->query('select * from notes where id = :id', [
+        $note = $this->database->query('select * from notes where id = :id', [
             'id' => $id
         ])->findOrFail();
 
@@ -63,7 +61,7 @@ class NotesController extends Controller
             ]);
         }
 
-        $this->db->query("INSERT INTO notes(title, body, user_id) VALUES(:title, :body, :user_id)", [
+        $this->database->query("INSERT INTO notes(title, body, user_id) VALUES(:title, :body, :user_id)", [
             'title' => $_POST['title'],
             'body' => $_POST['body'],
             'user_id' => 1
@@ -77,7 +75,7 @@ class NotesController extends Controller
     {
         $currentUserId = 1;
 
-        $note = $this->db->query('select * from notes where id = :id', [
+        $note = $this->database->query('select * from notes where id = :id', [
             'id' => $id
         ])->findOrFail();
 
@@ -93,7 +91,7 @@ class NotesController extends Controller
     {
         $currentUserId = 1;
 
-        $note = $this->db->query('select * from notes where id = :id', [
+        $note = $this->database->query('select * from notes where id = :id', [
             'id' => $id
         ])->findOrFail();
 
@@ -113,7 +111,7 @@ class NotesController extends Controller
             ]);
         }
 
-        $this->db->query("update notes set title = :title, body = :body where id = :id", [
+        $this->database->query("update notes set title = :title, body = :body where id = :id", [
             'id' => $id,
             'title' => $_POST['title'],
             'body' => $_POST['body']
@@ -127,13 +125,13 @@ class NotesController extends Controller
     {
         $currentUserId = 1;
 
-        $note = $this->db->query('select * from notes where id = :id', [
+        $note = $this->database->query('select * from notes where id = :id', [
             'id' => $id
         ])->findOrFail();
 
         authorize($note['user_id'] === $currentUserId);
 
-        $this->db->query('delete from notes where id = :id', [
+        $this->database->query('delete from notes where id = :id', [
             'id' => $id
         ]);
 

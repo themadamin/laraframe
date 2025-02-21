@@ -3,10 +3,15 @@
 namespace Core;
 
 use Exception;
+use ReflectionException;
 use ReflectionMethod;
 
 class Router
 {
+    public function __construct(
+        protected Container $container
+    )
+    {}
     protected array $routes = [];
 
     public function add($method, $uri, $controller): static
@@ -23,9 +28,11 @@ class Router
     }
 
     /**
-     * @throws Exception
+     * @param string $uri
+     * @param string $method
+     * @throws ReflectionException
      */
-    public function route($uri, $method)
+    public function route(string $uri, string $method): void
     {
         // Check static routes first
         if (isset($this->routes[$method]['static'][$uri])) {
@@ -49,14 +56,17 @@ class Router
             }
         }
 
-        // No route found
         abort('No matching route found');
     }
 
     /**
-     * @throws \ReflectionException
+     * @param $action
+     * @param array $params
+     * @throws ReflectionException
+     * @throws Exception
      */
-    protected function callAction($action, $params = []) {
+    protected function callAction($action, array $params = []): void
+    {
         $class = $action[0];
         $method = $action[1];
 
@@ -70,7 +80,7 @@ class Router
             }
         }
 
-        $reflection->invokeArgs(new $class, $args);
+        call_user_func_array([$this->container->get($class), $method], $args);
     }
 
     public function get(string $uri, array|string $controller): static

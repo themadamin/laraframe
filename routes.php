@@ -7,7 +7,6 @@ use Http\Controllers\LoginController;
 use Http\Controllers\LogoutController;
 use Http\Controllers\NotesController;
 use Http\Controllers\RegistrationController;
-use Http\Controllers\TestController;
 
 $router->get('/', [HomeController::class, 'index']);
 $router->get('/about', [AboutController::class, 'index']);
