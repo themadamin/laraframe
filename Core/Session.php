@@ -8,6 +8,7 @@ class Session
     {
         return $_SESSION[$key];
     }
+
     public static function put($key, $value)
     {
         $_SESSION[$key] = $value;

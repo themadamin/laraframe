@@ -2,8 +2,8 @@
 
 namespace Http\Controllers;
 
-use Core\App;
 use Core\Database;
+use Core\Request;
 use Core\Validator;
 
 class NotesController extends Controller
@@ -14,19 +14,21 @@ class NotesController extends Controller
 
     public function index()
     {
-        $notes = $this->database->query('select * from notes where user_id = 1')->get();
+        $notes = $this->database->query('select * from notes')->get();
         view('notes/index', ['heading' => 'Note', 'notes' => $notes]);
     }
 
     public function show($id)
     {
-        $currentUserId = 1;
+        $user = $this->database->query('select * from users where email = :email', [
+            'email' => $_SESSION['user']['email']
+        ])->find();
 
         $note = $this->database->query('select * from notes where id = :id', [
             'id' => $id
         ])->findOrFail();
 
-        authorize($note['user_id'] === $currentUserId);
+        authorize($note['user_id'] === $user['id']);
 
         view('notes/show', [
             'heading' => 'Note Info',
@@ -42,15 +44,15 @@ class NotesController extends Controller
         ]);
     }
 
-    public function store()
+    public function store(Request $request)
     {
         $errors = [];
 
-        if (! Validator::string($_POST['title'], 1, 100)) {
+        if (! Validator::string($request->title, 1, 100)) {
             $errors['title'] = 'A body of no more than 1,0 characters is required.';
         }
 
-        if (! Validator::string($_POST['body'], 1, 1000)) {
+        if (! Validator::string($request->body, 1, 1000)) {
             $errors['body'] = 'A body of no more than 1,0 characters is required.';
         }
 
@@ -62,8 +64,8 @@ class NotesController extends Controller
         }
 
         $this->database->query("INSERT INTO notes(title, body, user_id) VALUES(:title, :body, :user_id)", [
-            'title' => $_POST['title'],
-            'body' => $_POST['body'],
+            'title' => $request->title,
+            'body' => $request->body,
             'user_id' => 1
         ]);
 
@@ -73,13 +75,15 @@ class NotesController extends Controller
 
     public function edit($id)
     {
-        $currentUserId = 1;
+        $user = $this->database->query('select * from users where email = :email', [
+            'email' => $_SESSION['user']['email']
+        ])->find();
 
         $note = $this->database->query('select * from notes where id = :id', [
             'id' => $id
         ])->findOrFail();
 
-        authorize($note['user_id'] === $currentUserId);
+        authorize($note['user_id'] === $user['id']);
 
         view('notes/edit', [
             'heading' => 'Edit Note',
@@ -87,19 +91,21 @@ class NotesController extends Controller
         ]);
     }
 
-    public function update($id)
+    public function update($id, Request $request)
     {
-        $currentUserId = 1;
+        $user = $this->database->query('select * from users where email = :email', [
+            'email' => $_SESSION['user']['email']
+        ])->find();
 
         $note = $this->database->query('select * from notes where id = :id', [
             'id' => $id
         ])->findOrFail();
 
-        authorize($note['user_id'] === $currentUserId);
+        authorize($note['user_id'] === $user['id']);
 
         $errors = [];
 
-        if (! Validator::string($_POST['body'], 1, 1000)) {
+        if (! Validator::string($request->body, 1, 1000)) {
             $errors['body'] = 'A body of no more than 1,000 characters is required.';
         }
 
@@ -113,8 +119,8 @@ class NotesController extends Controller
 
         $this->database->query("update notes set title = :title, body = :body where id = :id", [
             'id' => $id,
-            'title' => $_POST['title'],
-            'body' => $_POST['body']
+            'title' => $request->title,
+            'body' => $request->body
         ]);
 
         header('location: /notes');

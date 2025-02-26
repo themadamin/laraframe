@@ -4,6 +4,7 @@ namespace Http\Controllers;
 
 use Core\App;
 use Core\Database;
+use Core\Request;
 use Core\Validator;
 
 class RegistrationController
@@ -21,11 +22,11 @@ class RegistrationController
         view('auth/registration');
     }
 
-    public function store()
+    public function store(Request $request)
     {
-        $name = $_POST['name'];
-        $email = $_POST['email'];
-        $password = $_POST['password'];
+        $name = $request->name;
+        $email = $request->email;
+        $password = $request->password;
 
         $errors = [];
 

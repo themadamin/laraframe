@@ -1,6 +1,7 @@
 <?php
 
 use Core\App;
+use Core\Request;
 use Core\Router;
 use Core\Session;
 use Core\ValidationException;
@@ -19,11 +20,10 @@ $router = new Router(App::container());
 
 $routes = require base_path('routes.php');
 
-$uri = parse_url($_SERVER['REQUEST_URI'])['path'];
-$method = $_POST['_method'] ?? $_SERVER['REQUEST_METHOD'];
+$request = App::get(Request::class);
 
 try {
-    $router->route($uri, $method);
+    $router->route($request->getUri(), $request->getMethod());
 } catch (ValidationException $exception) {
     Session::flash('errors', $exception->errors);
     Session::flash('old', $exception->old);
