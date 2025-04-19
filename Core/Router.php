@@ -69,10 +69,14 @@ class Router
         [$static, $dynamic] = $this->sortIntoGroups($method);
 
         // Check static routes first
-        $this->checkStatic($static, $uri, $method);
+        if ($this->checkStatic($static, $uri, $method)){
+            return;
+        }
 
         // Check dynamic routes
-        $this->checkDynamic($dynamic, $uri, $method);
+        if ($this->checkDynamic($dynamic, $uri, $method)){
+            return;
+        }
 
         abort('No matching route found');
     }
@@ -95,16 +99,18 @@ class Router
         return [$static, $dynamic];
     }
 
-    public function checkStatic(array $static, string $uri, string $method): void
+    public function checkStatic(array $static, string $uri, string $method): bool
     {
         foreach ($static as $route) {
             if ($route['uri'] === $uri && $route['method'] === $method) {
                 $this->callAction($route);
+                return true;
             }
         }
+        return false;
     }
 
-    public function checkDynamic(array $dynamic, string $uri, string $method): void
+    public function checkDynamic(array $dynamic, string $uri, string $method): bool
     {
         foreach ($dynamic as $route) {
             $pattern = $route['uri'];
@@ -117,9 +123,10 @@ class Router
                 array_shift($matches);
                 $params = array_combine($paramNames, $matches);
                 $this->callAction($route, $params);
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     protected function callAction(array $route, array $params = []): void
@@ -157,7 +164,7 @@ class Router
 
     public static function group(array $group, callable $callback)
     {
-        dd($callback);
+        //TODO recursive group assigning for routes
     }
 
     function previousUrl()

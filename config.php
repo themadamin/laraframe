@@ -2,7 +2,7 @@
 
 return [
     'database' => [
-        'host' => 'localhost',
+        'host' => 'mysql',
         'port' => 3306,
         'dbname' => 'laraframe',
         'charset' => 'utf8mb4'

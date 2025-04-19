@@ -1,0 +1,49 @@
+services:
+    app:
+        build: ./docker/app
+        container_name: app
+        volumes:
+            - ./:/var/www/html
+        environment:
+            MYSQL_HOST: mysql
+            MYSQL_DATABASE: laraframe
+            MYSQL_USER: root
+            MYSQL_PASSWORD: root
+        depends_on:
+            - mysql
+
+    nginx:
+        image: nginx:latest
+        container_name: nginx_container
+        ports:
+            - "8081:80"
+        volumes:
+            - ./:/var/www/html
+            - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+        depends_on:
+            - app
+
+    mysql:
+        image: mysql:8.0
+        container_name: mysql_container
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: laraframe
+        ports:
+            - "3306:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+    mailhog:
+        container_name: mailhog
+        image: mailhog/mailhog
+        restart: always
+        logging:
+            driver: "none"
+        ports:
+            - "8025:8025"
+            - "1025:1025"
+
+volumes:
+    mysql_data:

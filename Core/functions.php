@@ -36,10 +36,10 @@ function urlIs($value)
 function abort(string $message = 'Not found', $code = 404): void
 {
     http_response_code($code);
-
+    extract([$message]);
     require base_path("views/{$code}.php");
 
-    die();
+    exit();
 }
 
 function authorize($condition, $status = Response::FORBIDDEN)
@@ -70,6 +70,8 @@ function view($path, $attributes = []): void
     extract($attributes);
 
     require base_path('views/' . $path . '.view.php');
+
+//    exit();
 }
 
 /**
