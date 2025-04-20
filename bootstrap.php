@@ -2,8 +2,10 @@
 
 use Core\App;
 use Core\Container;
+use Core\CustomMailer;
 use Core\Database;
 use Core\Request;
+use Symfony\Component\Mailer\MailerInterface;
 
 $container = new Container;
 
@@ -16,5 +18,7 @@ $container->bind(Database::class, function () {
 $container->bind(Request::class, function (){
     return new Request();
 });
+
+$container->bind(MailerInterface::class, fn() => new CustomMailer());
 
 App::setContainer($container);

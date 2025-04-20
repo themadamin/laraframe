@@ -6,9 +6,16 @@ use Core\App;
 use Core\Database;
 use Core\Request;
 use Core\Validator;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 class RegistrationController
 {
+    public function __construct(protected MailerInterface $mailer)
+    {
+
+    }
     /**
      * @return void
      */
@@ -47,7 +54,7 @@ class RegistrationController
             view('auth/registration.view.php', ['errors' => $errors]);
         }
 
-        $db = App::resolve(Database::class);
+        $db = App::container()->get(Database::class);
 
         $user = $db->query("SELECT * FROM users WHERE email = :email", ['email' => $email])->find();
 
@@ -62,10 +69,26 @@ class RegistrationController
             ]);
         }
 
+        $mail = (new Email())
+            ->from('laraframe@support.com')
+            ->to($email)
+            ->subject('Welcome')
+            ->html($this->getHtmlBodyContent($name));
+
+        $this->mailer->send($mail);
+
         $_SESSION['user'] = ['email' => $email];
 
-        header("location: /");
+        redirect('/');
+    }
 
-        exit();
+    public function getHtmlBodyContent(string $name): string
+    {
+        return (<<<HTMLBody
+    <h1 style="text-align: center; color: blue;"> Welcome </h1>
+    Hello $name
+    <br>
+    Thank you for signing up!
+    HTMLBody);
     }
 }
